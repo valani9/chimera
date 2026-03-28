@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+*.egg
+.env
+data/backtest_log.json
+
+# Node
+chimera-warroom/node_modules/
+chimera-warroom/.next/
+chimera-warroom/.env.local
+
+# OS
+.DS_Store
+*.swp
