@@ -1,106 +1,131 @@
 "use client";
 
 import { useChimeraStore } from "@/lib/store";
-import { motion } from "framer-motion";
 
 export function PnLPanel() {
   const { trades, portfolio } = useChimeraStore();
 
-  // Build cumulative P&L data
   let cumPnl = 0;
-  const pnlData = trades.map((t, i) => {
+  const pnlData = trades.map((t) => {
     cumPnl += t.edge * t.bet_amount;
-    return { index: i, pnl: cumPnl };
+    return cumPnl;
   });
 
-  // Simple calibration visualization
-  const calibrationBins = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9];
-  const calibrationActual = [0.08, 0.22, 0.28, 0.43, 0.47, 0.58, 0.72, 0.79, 0.91];
+  const maxAbs = Math.max(Math.abs(cumPnl) || 1, 1);
+  const W = 280;
+  const H = 60;
+  const pad = 6;
+
+  const points =
+    pnlData.length > 1
+      ? pnlData
+          .map((v, i) => {
+            const x = pad + (i / (pnlData.length - 1)) * (W - pad * 2);
+            const y = H / 2 - (v / maxAbs) * (H / 2 - pad);
+            return `${x},${y}`;
+          })
+          .join(" ")
+      : null;
+
+  const lineColor = cumPnl >= 0 ? "var(--green)" : "var(--red)";
 
   return (
-    <div className="glass-panel p-3 flex flex-col h-full overflow-hidden">
-      <div className="flex items-center gap-2 mb-2">
-        <span className="text-xs font-semibold text-zinc-300 mono">P&L + CALIBRATION</span>
+    <div className="panel">
+      <div className="panel-header">
+        <span className="label">P&amp;L</span>
       </div>
 
-      {/* P&L display */}
-      <div className="flex items-center gap-4 mb-3">
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", padding: "12px 14px", gap: 12 }}>
+        {/* Big P&L number */}
         <div>
-          <div className="text-[10px] text-zinc-500">Cumulative P&L</div>
-          <motion.div
-            className={`mono text-2xl font-bold ${portfolio.total_pnl >= 0 ? "text-green-400" : "text-red-400"}`}
-            style={{ textShadow: `0 0 20px ${portfolio.total_pnl >= 0 ? "#22c55e40" : "#ef444440"}` }}
+          <div className="label" style={{ marginBottom: 4 }}>Cumulative</div>
+          <div
+            className="mono"
+            style={{
+              fontSize: 28,
+              fontWeight: 700,
+              color: portfolio.total_pnl >= 0 ? "var(--green)" : "var(--red)",
+              letterSpacing: "-0.01em",
+              lineHeight: 1,
+            }}
           >
-            ${portfolio.total_pnl >= 0 ? "+" : ""}{portfolio.total_pnl.toFixed(2)}
-          </motion.div>
-        </div>
-        <div className="flex-1 grid grid-cols-3 gap-2 text-center">
-          <div>
-            <div className="text-[10px] text-zinc-500">Brier</div>
-            <div className="mono text-sm text-cyan-400">0.148</div>
-          </div>
-          <div>
-            <div className="text-[10px] text-zinc-500">Sharpe</div>
-            <div className="mono text-sm text-purple-400">1.83</div>
-          </div>
-          <div>
-            <div className="text-[10px] text-zinc-500">Max DD</div>
-            <div className="mono text-sm text-amber-400">-6.7%</div>
+            {portfolio.total_pnl >= 0 ? "+" : ""}$
+            {portfolio.total_pnl.toFixed(2)}
           </div>
         </div>
-      </div>
 
-      {/* Mini P&L chart (SVG) */}
-      <div className="flex-1 min-h-0">
-        <svg viewBox="0 0 300 80" className="w-full h-12">
-          {pnlData.length > 1 && (
-            <>
-              {/* Area fill */}
-              <path
-                d={`M 0 80 ${pnlData.map((d, i) => `L ${(i / Math.max(pnlData.length - 1, 1)) * 300} ${80 - (d.pnl / Math.max(Math.abs(cumPnl) || 1, 1)) * 60}`).join(" ")} L 300 80 Z`}
-                fill={cumPnl >= 0 ? "#22c55e10" : "#ef444410"}
-              />
-              {/* Line */}
-              <path
-                d={`M ${pnlData.map((d, i) => `${(i / Math.max(pnlData.length - 1, 1)) * 300} ${80 - (d.pnl / Math.max(Math.abs(cumPnl) || 1, 1)) * 60}`).join(" L ")}`}
-                fill="none"
-                stroke={cumPnl >= 0 ? "#22c55e" : "#ef4444"}
-                strokeWidth="1.5"
-              />
-            </>
-          )}
-          {/* Zero line */}
-          <line x1="0" y1="80" x2="300" y2="80" stroke="#2a2a3e" strokeWidth="0.5" />
-        </svg>
+        {/* Stats row */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr 1fr",
+            gap: 1,
+            background: "var(--border)",
+          }}
+        >
+          {[
+            { label: "Trades", value: portfolio.trade_count.toString() },
+            { label: "Brier", value: "0.148" },
+            { label: "Sharpe", value: "1.83" },
+          ].map(({ label, value }) => (
+            <div
+              key={label}
+              style={{
+                padding: "8px 10px",
+                background: "var(--surface)",
+              }}
+            >
+              <div className="label" style={{ marginBottom: 2, fontSize: 9 }}>{label}</div>
+              <div
+                className="mono"
+                style={{ fontSize: 13, fontWeight: 600, color: "var(--text)" }}
+              >
+                {value}
+              </div>
+            </div>
+          ))}
+        </div>
 
-        {/* Calibration plot */}
-        <div className="mt-2">
-          <div className="text-[10px] text-zinc-500 mb-1">Calibration Plot</div>
-          <svg viewBox="0 0 200 100" className="w-full h-16">
-            {/* Perfect calibration line */}
-            <line x1="10" y1="90" x2="190" y2="10" stroke="#2a2a3e" strokeWidth="0.5" strokeDasharray="3 3" />
-            {/* Actual calibration dots */}
-            {calibrationBins.map((bin, i) => (
-              <circle
-                key={i}
-                cx={10 + bin * 180}
-                cy={90 - calibrationActual[i] * 80}
-                r="3"
-                fill="#06b6d4"
-                opacity={0.8}
-              />
-            ))}
-            {/* Connect dots */}
-            <path
-              d={`M ${calibrationBins.map((bin, i) => `${10 + bin * 180} ${90 - calibrationActual[i] * 80}`).join(" L ")}`}
-              fill="none"
-              stroke="#06b6d4"
-              strokeWidth="1"
-              opacity={0.5}
+        {/* SVG line chart */}
+        <div style={{ flex: 1, minHeight: 0 }}>
+          <div className="label" style={{ marginBottom: 6, fontSize: 9 }}>Equity Curve</div>
+          <svg
+            viewBox={`0 0 ${W} ${H}`}
+            style={{ width: "100%", height: "100%", display: "block", minHeight: 0 }}
+            preserveAspectRatio="none"
+          >
+            {/* Zero baseline */}
+            <line
+              x1={0}
+              y1={H / 2}
+              x2={W}
+              y2={H / 2}
+              stroke="var(--border-2)"
+              strokeWidth={0.5}
             />
-            {/* Axis labels */}
-            <text x="100" y="98" fontSize="7" fill="#71717a" textAnchor="middle">Predicted</text>
-            <text x="3" y="50" fontSize="7" fill="#71717a" textAnchor="middle" transform="rotate(-90, 3, 50)">Actual</text>
+
+            {points && (
+              <polyline
+                points={points}
+                fill="none"
+                stroke={lineColor}
+                strokeWidth={1.2}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            )}
+
+            {pnlData.length === 0 && (
+              <text
+                x={W / 2}
+                y={H / 2 + 4}
+                textAnchor="middle"
+                fontSize={9}
+                fill="var(--text-3)"
+              >
+                No data
+              </text>
+            )}
           </svg>
         </div>
       </div>

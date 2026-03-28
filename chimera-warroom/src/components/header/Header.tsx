@@ -5,93 +5,166 @@ import { ukraineScenario, tariffShockScenario } from "@/lib/scenario";
 
 const SCENARIOS = [
   { key: "ukraine-signal", label: "Ukraine Signal", scenario: ukraineScenario },
-  { key: "tariff-shock", label: "Tariff Shock", scenario: tariffShockScenario },
+  { key: "tariff-shock",   label: "Tariff Shock",   scenario: tariffShockScenario },
 ];
 
+const SUBSYSTEMS = ["ORACLE", "HYDRA", "RIPPLE", "PREDATOR"];
+
 export function Header() {
-  const { mode, replaySpeed, replayPaused, setReplaySpeed, toggleReplayPause, signals, trades, portfolio, activeScenario, startReplay } =
-    useChimeraStore();
+  const {
+    mode, replaySpeed, replayPaused,
+    setReplaySpeed, toggleReplayPause,
+    signals, trades, portfolio,
+    activeScenario, startReplay,
+  } = useChimeraStore();
+
+  const pnl = portfolio.total_pnl;
 
   return (
-    <div className="warroom-header glass-panel flex items-center justify-between px-4" style={{ borderRadius: 0 }}>
-      {/* Left: Logo */}
-      <div className="flex items-center gap-3">
-        <div className="text-xl font-bold tracking-wider">
-          <span style={{ color: "#06b6d4" }}>CHI</span>
-          <span style={{ color: "#a855f7" }}>ME</span>
-          <span style={{ color: "#22c55e" }}>RA</span>
+    <header
+      className="warroom-header"
+      style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        padding: "0 20px",
+        borderBottom: "1px solid var(--border)",
+        height: "56px",
+      }}
+    >
+      {/* Wordmark */}
+      <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
+        <span
+          style={{
+            fontWeight: 600,
+            fontSize: 15,
+            letterSpacing: "0.12em",
+            color: "var(--text)",
+          }}
+        >
+          CHIMERA
+        </span>
+
+        {/* Subsystem status */}
+        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+          {SUBSYSTEMS.map((sys) => (
+            <div key={sys} style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              <div className="status-dot" />
+              <span className="label">{sys}</span>
+            </div>
+          ))}
         </div>
-        <span className="text-xs text-zinc-500 hidden sm:inline">WAR ROOM</span>
       </div>
 
-      {/* Center: Subsystem status */}
-      <div className="flex items-center gap-4 text-xs mono">
-        {["ORACLE", "HYDRA", "RIPPLE", "PREDATOR"].map((sys, i) => (
-          <div key={sys} className="flex items-center gap-1.5">
-            <div
-              className="w-2 h-2 rounded-full pulse-dot"
-              style={{
-                backgroundColor: ["#06b6d4", "#a855f7", "#22c55e", "#ef4444"][i],
-              }}
-            />
-            <span className="text-zinc-400">{sys}</span>
-          </div>
-        ))}
-      </div>
-
-      {/* Right: Mode + stats */}
-      <div className="flex items-center gap-4 text-xs">
-        {/* Scenario selector */}
-        <div className="flex items-center gap-1">
-          {SCENARIOS.map(({ key, label, scenario }) => (
+      {/* Center: scenario selector */}
+      <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
+        {SCENARIOS.map(({ key, label, scenario }) => {
+          const active = activeScenario?.id === key;
+          return (
             <button
               key={key}
               onClick={() => startReplay(scenario)}
-              className={`px-2 py-0.5 rounded text-xs mono transition-colors ${
-                activeScenario?.id === key
-                  ? "text-amber-400 border border-amber-500/40"
-                  : "text-zinc-500 hover:text-zinc-300"
-              }`}
-              style={{ background: activeScenario?.id === key ? "#1e1a00" : "transparent" }}
+              style={{
+                padding: "4px 12px",
+                fontSize: 11,
+                fontWeight: 500,
+                letterSpacing: "0.04em",
+                color: active ? "var(--text)" : "var(--text-2)",
+                background: "transparent",
+                border: "none",
+                borderBottom: active ? "1px solid var(--text)" : "1px solid transparent",
+                cursor: "pointer",
+                transition: "color 0.15s, border-color 0.15s",
+              }}
             >
               {label}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Right: controls + stats */}
+      <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
+        {/* Replay controls */}
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <button
+            onClick={toggleReplayPause}
+            style={{
+              width: 24,
+              height: 24,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 11,
+              color: "var(--text-2)",
+              background: "var(--surface-2)",
+              border: "1px solid var(--border)",
+              borderRadius: 4,
+              cursor: "pointer",
+            }}
+          >
+            {replayPaused ? "▶" : "⏸"}
+          </button>
+          {[1, 2, 5].map((s) => (
+            <button
+              key={s}
+              onClick={() => setReplaySpeed(s)}
+              style={{
+                padding: "2px 6px",
+                fontSize: 11,
+                fontFamily: "inherit",
+                color: replaySpeed === s ? "var(--text)" : "var(--text-3)",
+                background: "transparent",
+                border: "none",
+                cursor: "pointer",
+                fontWeight: replaySpeed === s ? 600 : 400,
+              }}
+            >
+              {s}×
             </button>
           ))}
         </div>
 
-        {mode === "replay" && (
-          <div className="flex items-center gap-2">
-            <button
-              onClick={toggleReplayPause}
-              className="px-2 py-0.5 rounded text-zinc-300 hover:text-white"
-              style={{ background: "#1e1e2e" }}
-            >
-              {replayPaused ? "▶" : "⏸"}
-            </button>
-            {[1, 2, 5].map((s) => (
-              <button
-                key={s}
-                onClick={() => setReplaySpeed(s)}
-                className={`px-1.5 py-0.5 rounded mono ${replaySpeed === s ? "text-cyan-400" : "text-zinc-500"}`}
-                style={{ background: replaySpeed === s ? "#1e1e3e" : "transparent" }}
-              >
-                {s}x
-              </button>
-            ))}
+        {/* Stats */}
+        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
+            <span className="label">Signals</span>
+            <span className="mono" style={{ fontSize: 12, color: "var(--text)" }}>{signals.length}</span>
           </div>
-        )}
-
-        <div className="flex items-center gap-1.5">
-          <div className={`w-2 h-2 rounded-full pulse-dot`} style={{ backgroundColor: mode === "live" ? "#22c55e" : "#f59e0b" }} />
-          <span className="text-zinc-400">{mode === "live" ? "LIVE" : "REPLAY"}</span>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
+            <span className="label">Trades</span>
+            <span className="mono" style={{ fontSize: 12, color: "var(--text)" }}>{trades.length}</span>
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
+            <span className="label">P&amp;L</span>
+            <span
+              className="mono"
+              style={{
+                fontSize: 13,
+                fontWeight: 600,
+                color: pnl >= 0 ? "var(--green)" : "var(--red)",
+              }}
+            >
+              {pnl >= 0 ? "+" : ""}${pnl.toFixed(2)}
+            </span>
+          </div>
         </div>
 
-        <span className="text-zinc-500">Signals: <span className="text-zinc-300">{signals.length}</span></span>
-        <span className="text-zinc-500">Trades: <span className="text-zinc-300">{trades.length}</span></span>
-        <span className={`mono font-semibold ${portfolio.total_pnl >= 0 ? "text-green-400" : "text-red-400"}`}>
-          ${portfolio.total_pnl >= 0 ? "+" : ""}{portfolio.total_pnl.toFixed(2)}
-        </span>
+        {/* Mode badge */}
+        <div
+          style={{
+            padding: "3px 8px",
+            fontSize: 10,
+            fontWeight: 500,
+            letterSpacing: "0.08em",
+            color: mode === "live" ? "var(--green)" : "var(--text-2)",
+            border: `1px solid ${mode === "live" ? "var(--green)" : "var(--border)"}`,
+            borderRadius: 3,
+          }}
+        >
+          {mode === "live" ? "LIVE" : "REPLAY"}
+        </div>
       </div>
-    </div>
+    </header>
   );
 }

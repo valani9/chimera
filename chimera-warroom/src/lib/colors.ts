@@ -1,44 +1,41 @@
 export const COLORS = {
-  bg: "#0a0a0f",
-  panelBg: "#111118",
-  panelBorder: "#1e1e2e",
-  glass: "rgba(17, 17, 24, 0.7)",
+  bg:       "#000000",
+  surface:  "#0a0a0a",
+  surface2: "#111111",
+  border:   "rgba(255,255,255,0.07)",
+  border2:  "rgba(255,255,255,0.13)",
 
-  textPrimary: "#e4e4e7",
-  textSecondary: "#71717a",
-  textDim: "#3f3f46",
+  text:  "#ffffff",
+  text2: "#888888",
+  text3: "#333333",
 
-  cyan: "#06b6d4",
-  purple: "#a855f7",
   green: "#22c55e",
-  red: "#ef4444",
+  red:   "#ef4444",
   amber: "#f59e0b",
-  gold: "#eab308",
-  blue: "#3b82f6",
 
-  // Agent colors
-  bull: "#22c55e",
-  bear: "#ef4444",
-  historian: "#f59e0b",
+  // Agent colors — kept for debate panel
+  bull:       "#22c55e",
+  bear:       "#ef4444",
+  historian:  "#f59e0b",
   contrarian: "#a855f7",
-  quant: "#06b6d4",
-  judge: "#eab308",
+  quant:      "#06b6d4",
+  judge:      "#f5f5f5",
 } as const;
 
 export const PHASE_COLORS: Record<string, string> = {
-  ORACLE: COLORS.cyan,
-  HYDRA: COLORS.purple,
-  RIPPLE: COLORS.green,
-  PREDATOR: COLORS.red,
-  FUSION: COLORS.gold,
-  EXECUTE: "#ffffff",
+  ORACLE:   "#888888",
+  HYDRA:    "#a855f7",
+  RIPPLE:   "#22c55e",
+  PREDATOR: "#ef4444",
+  FUSION:   "#f5f5f5",
+  EXECUTE:  "#22c55e",
 };
 
 export const AGENT_COLORS: Record<string, string> = {
-  Bull: COLORS.bull,
-  Bear: COLORS.bear,
-  Historian: COLORS.historian,
+  Bull:       COLORS.bull,
+  Bear:       COLORS.bear,
+  Historian:  COLORS.historian,
   Contrarian: COLORS.contrarian,
-  Quant: COLORS.quant,
-  Judge: COLORS.judge,
+  Quant:      COLORS.quant,
+  Judge:      COLORS.judge,
 };

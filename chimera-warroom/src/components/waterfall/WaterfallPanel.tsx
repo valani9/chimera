@@ -2,88 +2,161 @@
 
 import { useChimeraStore } from "@/lib/store";
 import { PHASE_COLORS } from "@/lib/colors";
-import { motion, AnimatePresence } from "framer-motion";
 
 export function WaterfallPanel() {
   const { waterfall } = useChimeraStore();
 
   return (
-    <div className="glass-panel p-3 flex flex-col h-full overflow-hidden">
-      <div className="flex items-center gap-2 mb-2">
-        <span className="text-xs font-semibold text-zinc-300 mono">REASONING WATERFALL</span>
+    <div
+      className="warroom-waterfall"
+      style={{
+        background: "var(--surface)",
+        display: "flex",
+        flexDirection: "column",
+        overflow: "hidden",
+      }}
+    >
+      {/* Header strip */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          padding: "0 16px",
+          height: 30,
+          borderBottom: "1px solid var(--border)",
+          flexShrink: 0,
+        }}
+      >
+        <span className="label">Reasoning Waterfall</span>
+        <span className="mono" style={{ fontSize: 10, color: "var(--text-3)", marginLeft: "auto" }}>
+          {waterfall.length} steps
+        </span>
       </div>
 
-      <div className="flex-1 overflow-y-auto">
-        {/* Vertical line */}
-        <div className="relative pl-4">
+      {/* Horizontal scrolling timeline */}
+      <div
+        style={{
+          flex: 1,
+          overflowX: "auto",
+          overflowY: "hidden",
+          display: "flex",
+          alignItems: "stretch",
+          position: "relative",
+        }}
+      >
+        {waterfall.length === 0 ? (
           <div
-            className="absolute left-1.5 top-0 bottom-0 w-px"
-            style={{ background: "#2a2a3e" }}
-          />
-
-          <AnimatePresence>
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: "100%",
+              fontSize: 11,
+              color: "var(--text-3)",
+            }}
+          >
+            Pipeline idle...
+          </div>
+        ) : (
+          <div
+            style={{
+              display: "flex",
+              alignItems: "stretch",
+              gap: 0,
+              padding: "0 16px",
+              minWidth: "max-content",
+            }}
+          >
             {waterfall.map((step, i) => {
-              const color = PHASE_COLORS[step.phase] || "#71717a";
-              return (
-                <motion.div
-                  key={step.id || i}
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.4, delay: 0.05 }}
-                  className="relative mb-2"
-                >
-                  {/* Dot on the timeline */}
-                  <div
-                    className="absolute -left-2.5 top-1 w-2 h-2 rounded-full"
-                    style={{ backgroundColor: color, boxShadow: `0 0 8px ${color}40` }}
-                  />
+              const phaseColor = PHASE_COLORS[step.phase] ?? "var(--text-3)";
+              const isLast = i === waterfall.length - 1;
 
-                  <div className="ml-2 p-2 rounded" style={{ background: "rgba(30, 30, 46, 0.4)" }}>
-                    {/* Phase badge */}
-                    <div className="flex items-center justify-between mb-0.5">
-                      <span
-                        className="mono text-[10px] font-semibold px-1.5 py-0.5 rounded"
-                        style={{ color, background: `${color}15` }}
-                      >
-                        {step.phase}
-                      </span>
-                      {step.probability !== undefined && step.probability !== null && (
-                        <span
-                          className="mono text-[11px] font-bold px-1.5 py-0.5 rounded"
-                          style={{
-                            color: step.probability > 0.5 ? "#22c55e" : "#ef4444",
-                            background: `${step.probability > 0.5 ? "#22c55e" : "#ef4444"}15`,
-                            boxShadow: `0 0 8px ${step.probability > 0.5 ? "#22c55e" : "#ef4444"}20`,
-                          }}
-                        >
-                          {(step.probability * 100).toFixed(0)}%
-                        </span>
-                      )}
+              return (
+                <div
+                  key={step.id || i}
+                  className="fade-in"
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 0,
+                  }}
+                >
+                  {/* Step card */}
+                  <div
+                    style={{
+                      width: 160,
+                      height: "100%",
+                      display: "flex",
+                      flexDirection: "column",
+                      justifyContent: "center",
+                      padding: "0 12px",
+                      borderRight: isLast ? "none" : "1px solid var(--border)",
+                      gap: 4,
+                    }}
+                  >
+                    {/* Phase label */}
+                    <div
+                      style={{
+                        fontSize: 9,
+                        fontWeight: 500,
+                        letterSpacing: "0.1em",
+                        color: phaseColor,
+                        textTransform: "uppercase",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 5,
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: 4,
+                          height: 4,
+                          borderRadius: "50%",
+                          background: phaseColor,
+                          flexShrink: 0,
+                        }}
+                      />
+                      {step.phase}
                     </div>
 
                     {/* Title */}
-                    <div className="text-[11px] text-zinc-200 leading-tight">
+                    <div
+                      style={{
+                        fontSize: 11,
+                        color: "var(--text)",
+                        lineHeight: 1.35,
+                        overflow: "hidden",
+                        display: "-webkit-box",
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: "vertical",
+                      }}
+                    >
                       {step.title}
                     </div>
 
-                    {/* Detail */}
-                    {step.detail && (
-                      <div className="text-[10px] text-zinc-500 mt-0.5 leading-tight">
-                        {step.detail}
+                    {/* Probability badge */}
+                    {step.probability !== undefined && step.probability !== null && (
+                      <div
+                        className="mono"
+                        style={{
+                          fontSize: 11,
+                          fontWeight: 600,
+                          color:
+                            step.probability > 0.5
+                              ? "var(--green)"
+                              : "var(--red)",
+                        }}
+                      >
+                        {(step.probability * 100).toFixed(0)}%
                       </div>
                     )}
                   </div>
-                </motion.div>
+                </div>
               );
             })}
-          </AnimatePresence>
-
-          {waterfall.length === 0 && (
-            <div className="text-zinc-600 text-xs text-center mt-8">
-              Waiting for pipeline cycle...
-            </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );

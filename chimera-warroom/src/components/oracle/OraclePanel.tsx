@@ -1,75 +1,166 @@
 "use client";
 
 import { useChimeraStore } from "@/lib/store";
-import { PHASE_COLORS } from "@/lib/colors";
-import { motion, AnimatePresence } from "framer-motion";
 
-const SIGNAL_ICONS: Record<string, string> = {
-  news_cluster: "📡",
-  wikipedia_spike: "📊",
-  cloudflare_anomaly: "🌐",
-  gov_change: "🏛️",
-  vpin_spike: "⚠️",
-  whale_move: "🐋",
-  cascade: "🔗",
+const TYPE_COLOR: Record<string, string> = {
+  news_cluster:       "#888",
+  wikipedia_spike:    "#888",
+  cloudflare_anomaly: "#888",
+  gov_change:         "#f59e0b",
+  vpin_spike:         "#ef4444",
+  whale_move:         "#ef4444",
+  cascade:            "#ef4444",
+};
+
+const TYPE_LABEL: Record<string, string> = {
+  news_cluster:       "NEWS",
+  wikipedia_spike:    "WIKI",
+  cloudflare_anomaly: "NET",
+  gov_change:         "GOV",
+  vpin_spike:         "VPIN",
+  whale_move:         "WHALE",
+  cascade:            "CASCADE",
 };
 
 export function OraclePanel() {
   const { signals } = useChimeraStore();
 
   return (
-    <div className="glass-panel p-3 flex flex-col h-full overflow-hidden">
-      <div className="flex items-center gap-2 mb-2">
-        <div className="w-2 h-2 rounded-full" style={{ backgroundColor: "#06b6d4" }} />
-        <span className="text-xs font-semibold text-cyan-400 mono">ORACLE</span>
+    <div className="panel">
+      {/* Header */}
+      <div className="panel-header">
+        <div className="status-dot" />
+        <span className="label">Oracle</span>
+        <span
+          className="mono"
+          style={{ marginLeft: "auto", fontSize: 11, color: "var(--text-2)" }}
+        >
+          {signals.length}
+        </span>
       </div>
 
-      <div className="flex-1 overflow-y-auto space-y-1.5">
-        <AnimatePresence>
-          {[...signals].reverse().map((signal, i) => (
-            <motion.div
-              key={signal.id}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.3 }}
-              className="p-2 rounded text-xs"
-              style={{
-                background: "rgba(30, 30, 46, 0.6)",
-                borderLeft: `2px solid ${signal.source === "predator" ? "#ef4444" : "#06b6d4"}`,
-              }}
-            >
-              <div className="flex items-center justify-between mb-0.5">
-                <span className="mono text-zinc-500 text-[10px]">
-                  {new Date(signal.timestamp).toLocaleTimeString()}
-                </span>
-                <span className="mono text-[10px]" style={{ color: signal.source === "predator" ? "#ef4444" : "#06b6d4" }}>
-                  {signal.signal_type.replace(/_/g, " ").toUpperCase()}
-                </span>
-              </div>
-              <div className="text-zinc-300 text-[11px] leading-tight mb-1">
-                {SIGNAL_ICONS[signal.signal_type] || "📌"} {signal.title}
-              </div>
-              {/* Score bar */}
-              <div className="flex items-center gap-2">
-                <div className="flex-1 h-1 rounded-full" style={{ background: "#1e1e2e" }}>
-                  <div
-                    className="h-full rounded-full"
-                    style={{
-                      width: `${signal.score * 100}%`,
-                      background: `linear-gradient(90deg, #06b6d4, ${signal.score > 0.7 ? "#ef4444" : "#22c55e"})`,
-                    }}
-                  />
-                </div>
-                <span className="mono text-[10px] text-zinc-400">{signal.score.toFixed(2)}</span>
-              </div>
-            </motion.div>
-          ))}
-        </AnimatePresence>
-
-        {signals.length === 0 && (
-          <div className="text-zinc-600 text-xs text-center mt-8">
-            Scanning data sources...
+      {/* Signal list */}
+      <div style={{ flex: 1, overflowY: "auto" }}>
+        {signals.length === 0 ? (
+          <div
+            style={{
+              padding: "32px 14px",
+              fontSize: 11,
+              color: "var(--text-3)",
+              textAlign: "center",
+            }}
+          >
+            Scanning sources...
           </div>
+        ) : (
+          [...signals].reverse().map((signal) => {
+            const typeColor = TYPE_COLOR[signal.signal_type] ?? "#555";
+            const typeLabel = TYPE_LABEL[signal.signal_type] ?? signal.signal_type.toUpperCase();
+            return (
+              <div
+                key={signal.id}
+                className="fade-in"
+                style={{
+                  display: "flex",
+                  alignItems: "stretch",
+                  borderBottom: "1px solid var(--border)",
+                }}
+              >
+                {/* Left accent bar */}
+                <div
+                  style={{
+                    width: 2,
+                    flexShrink: 0,
+                    background: typeColor,
+                    opacity: 0.7,
+                  }}
+                />
+                {/* Content */}
+                <div style={{ flex: 1, padding: "8px 12px", minWidth: 0 }}>
+                  {/* Row 1: time + type */}
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      marginBottom: 3,
+                    }}
+                  >
+                    <span
+                      className="mono"
+                      style={{ fontSize: 9, color: "var(--text-3)" }}
+                    >
+                      {new Date(signal.timestamp).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        second: "2-digit",
+                      })}
+                    </span>
+                    <span
+                      className="mono"
+                      style={{
+                        fontSize: 9,
+                        color: typeColor,
+                        letterSpacing: "0.06em",
+                      }}
+                    >
+                      {typeLabel}
+                    </span>
+                  </div>
+
+                  {/* Row 2: title */}
+                  <div
+                    style={{
+                      fontSize: 11,
+                      color: "var(--text)",
+                      lineHeight: 1.4,
+                      overflow: "hidden",
+                      display: "-webkit-box",
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: "vertical",
+                      marginBottom: 5,
+                    }}
+                  >
+                    {signal.title}
+                  </div>
+
+                  {/* Row 3: score bar */}
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <div
+                      style={{
+                        flex: 1,
+                        height: 2,
+                        background: "var(--surface-2)",
+                        borderRadius: 1,
+                        overflow: "hidden",
+                      }}
+                    >
+                      <div
+                        style={{
+                          height: "100%",
+                          width: `${signal.score * 100}%`,
+                          background:
+                            signal.score >= 0.75
+                              ? "var(--red)"
+                              : signal.score >= 0.5
+                              ? "var(--amber)"
+                              : "#555",
+                          borderRadius: 1,
+                          transition: "width 0.4s ease",
+                        }}
+                      />
+                    </div>
+                    <span
+                      className="mono"
+                      style={{ fontSize: 10, color: "var(--text-2)", flexShrink: 0 }}
+                    >
+                      {signal.score.toFixed(2)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            );
+          })
         )}
       </div>
     </div>

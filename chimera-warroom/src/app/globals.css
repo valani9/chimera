@@ -1,83 +1,107 @@
 @import "tailwindcss";
 
-@theme {
-  --color-bg: #0a0a0f;
-  --color-panel: #111118;
-  --color-panel-border: #1e1e2e;
-  --color-cyan: #06b6d4;
-  --color-purple: #a855f7;
-  --color-green: #22c55e;
-  --color-red: #ef4444;
-  --color-amber: #f59e0b;
-  --color-gold: #eab308;
+/* ─── Design tokens ─────────────────────────────────────── */
+:root {
+  --bg:        #000000;
+  --surface:   #0a0a0a;
+  --surface-2: #111111;
+  --border:    rgba(255, 255, 255, 0.07);
+  --border-2:  rgba(255, 255, 255, 0.13);
+  --text:      #ffffff;
+  --text-2:    #888888;
+  --text-3:    #333333;
+  --green:     #22c55e;
+  --red:       #ef4444;
+  --amber:     #f59e0b;
 }
 
-* { box-sizing: border-box; }
+/* ─── Reset ─────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-body {
-  background: #0a0a0f;
-  color: #e4e4e7;
-  font-family: "Inter", "Segoe UI", system-ui, sans-serif;
-  margin: 0;
+html, body {
+  width: 100vw;
+  height: 100vh;
   overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Inter", "Segoe UI", system-ui, sans-serif;
+  font-size: 13px;
+  -webkit-font-smoothing: antialiased;
 }
 
-code, .mono {
-  font-family: "JetBrains Mono", "Fira Code", "SF Mono", monospace;
+.mono {
+  font-family: "JetBrains Mono", "Fira Code", "SF Mono", ui-monospace, monospace;
 }
 
-/* Glassmorphism panel */
-.glass-panel {
-  background: rgba(17, 17, 24, 0.8);
-  backdrop-filter: blur(12px);
-  border: 1px solid #1e1e2e;
-  border-radius: 8px;
+.label {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-2);
 }
 
-/* Glow effects */
-.glow-cyan { box-shadow: 0 0 20px rgba(6, 182, 212, 0.2); }
-.glow-purple { box-shadow: 0 0 20px rgba(168, 85, 247, 0.2); }
-.glow-green { box-shadow: 0 0 20px rgba(34, 197, 94, 0.2); }
-.glow-gold { box-shadow: 0 0 20px rgba(234, 179, 8, 0.2); }
-.glow-red { box-shadow: 0 0 20px rgba(239, 68, 68, 0.2); }
-
-/* Pulse animation for live indicator */
-@keyframes pulse-dot {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.4; }
-}
-.pulse-dot { animation: pulse-dot 2s ease-in-out infinite; }
-
-@keyframes pulse-ring {
-  0% { transform: scale(1); opacity: 0.6; }
-  100% { transform: scale(2.5); opacity: 0; }
-}
-.pulse-ring { animation: pulse-ring 2s ease-out infinite; }
-
-/* Scrollbar */
-::-webkit-scrollbar { width: 4px; }
+/* ─── Scrollbar ──────────────────────────────────────────── */
+::-webkit-scrollbar       { width: 3px; height: 3px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #2a2a3e; border-radius: 4px; }
+::-webkit-scrollbar-thumb { background: #222; border-radius: 2px; }
 
-/* War Room grid layout */
+/* ─── Panel ──────────────────────────────────────────────── */
+.panel {
+  background: var(--surface);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 14px;
+  border-bottom: 1px solid var(--border);
+  height: 38px;
+  flex-shrink: 0;
+}
+
+/* ─── Status dot ─────────────────────────────────────────── */
+.status-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--green);
+  flex-shrink: 0;
+  animation: blink 2.4s ease-in-out infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.3; }
+}
+
+/* ─── Fade-in ────────────────────────────────────────────── */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(3px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.fade-in { animation: fadeIn 0.18s ease forwards; }
+
+/* ─── War Room grid ──────────────────────────────────────── */
 .warroom-grid {
   display: grid;
-  grid-template-columns: 15% 35% 25% 25%;
-  grid-template-rows: 48px 1fr 35%;
-  height: 100vh;
+  grid-template-columns: 240px 1fr 320px;
+  grid-template-rows: 56px 1fr 152px 1fr;
   width: 100vw;
-  gap: 2px;
-  padding: 2px;
+  height: 100vh;
+  gap: 1px;
+  background: var(--border);
 }
 
-.warroom-header { grid-column: 1 / -1; }
+.warroom-header {
+  grid-column: 1 / -1;
+  background: var(--bg);
+}
 
-/* Bottom row adjustments */
-.warroom-grid > *:nth-child(6) { /* Oracle bottom = world map */ }
-.warroom-grid > *:nth-child(7) { /* PnL + Calibration */ }
-.warroom-grid > *:nth-child(8) { grid-column: span 2; /* Fusion + Positions */ }
-
-/* Typing animation */
-@keyframes blink-caret {
-  50% { border-color: transparent; }
+.warroom-waterfall {
+  grid-column: 1 / -1;
 }
